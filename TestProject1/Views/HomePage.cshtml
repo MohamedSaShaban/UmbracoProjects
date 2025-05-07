@@ -1,0 +1,89 @@
+﻿
+@{
+	Layout = "MainPage.cshtml";
+	var bannerTitle = Model.Value("bannerTitle");
+    var bannerSubtitle = Model.Value("bannerSubtitle");
+    var bannerImage = Model.Value<IPublishedContent>("bannerImage");
+    var bannerImageUrl = bannerImage?.Url();
+    var bannerButtonText = Model.Value("bannerButtonText");
+    var bannerButtonLink = Model.Value<Link>("bannerButtonUrl");
+
+    var newsListPage = Model.Children().FirstOrDefault(x => x.ContentType.Alias == "newsListPage");
+
+    var latestNews = newsListPage?.Children()
+        .Where(x => x.ContentType.Alias == "newsItem")
+        .OrderByDescending(x => x.Value<DateTime>("publishDate"))
+        .Take(3);
+}
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage<ContentModels.HomePage>
+    
+<div class="container-fluid p-0 py-5">
+    <div class="banner text-white d-flex align-items-center justify-content-center text-center" style="
+        height: 1000px;
+        background-image: url('@bannerImageUrl');
+        background-size: cover;
+        background-position: center;
+        position: relative;">
+        <div class="bg-dark bg-opacity-50 p-4 rounded">
+            <h1 class="display-4 fw-bold">@bannerTitle</h1>
+            <p class="lead">@bannerSubtitle</p>
+            @if (bannerButtonLink != null)
+            {
+                <a href="@bannerButtonLink.Url" class="btn btn-primary btn-lg mt-3">
+                    @bannerButtonText
+                </a>
+            }
+        </div>
+
+        @* <div class="bg-dark bg-opacity-50 p-4 rounded">
+            @{
+                var links = Model.Value<IEnumerable<Link>>("quickLinks");
+                if (links != null && links.Any())
+                {
+                    <section class="mt-5">
+                        <h3 class="mb-3 text-primary">روابط سريعة</h3>
+                        <div class="list-group">
+                            @foreach (var link in links)
+                            {
+                                <a href="@link.Url" target="@link.Target" class="list-group-item list-group-item-action">
+                                    @link.Name
+                                </a>
+                            }
+                        </div>
+                    </section>
+                }
+             }
+        </div> *@
+    </div>
+
+    <div class="container my-5">
+        <h2 class="mb-4">أحدث الأخبار</h2>
+        <div class="row">
+            @foreach (var news in latestNews ?? Enumerable.Empty<IPublishedContent>())
+            {
+                var title = news.Value("newsTitle");
+                var summary = news.Value<string>("newsBody")?.ToString()?.Split('.').FirstOrDefault() + " .";
+                var shortText = Regex.Replace(summary ?? "", "<.*?>", "");
+                var image = news.Value<IPublishedContent>("newsImage");
+                var imageUrl = image?.Url();
+                var url = news.Url();
+
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100 shadow-sm">
+                        @if (!string.IsNullOrEmpty(imageUrl))
+                        {
+                            <img src="@imageUrl" class="card-img-top" alt="@title" />
+                        }
+                        <div class="card-body">
+                            <h5 class="card-title">@title</h5>
+                            <p class="card-text">@shortText</p>
+                            <a href="@url" class="btn btn-outline-primary">اقرأ المزيد</a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+</div>
+

@@ -1,0 +1,46 @@
+﻿@{
+	Layout = "MainPage.cshtml";
+    var currentMember = await MemberManager.GetCurrentMemberAsync();
+
+    if (currentMember == null)
+    {
+        Context.Response.Redirect("/login");
+    }
+}
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage<ContentModels.ContactUsPage>
+
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+<div class="container py-5">
+        <h1 class="text-center mb-4">📩 اتصل بنا</h1>
+
+        <!-- ✅ عرض رسالة النجاح أو الخطأ -->
+        @if (TempData["FormMessage"] != null)
+        {
+            <div class="alert alert-info text-center" role="alert">
+                @TempData["FormMessage"]
+            </div>
+        }
+
+        <!-- ✅ نموذج الاتصال -->
+        <form method="post" asp-controller="Contact" asp-action="SubmitForm">
+            @Html.AntiForgeryToken()
+
+            <div class="mb-3">
+                <label for="name" class="form-label">الاسم</label>
+                <input type="text" name="Name" class="form-control" id="name" required />
+            </div>
+
+            <div class="mb-3">
+                <label for="email" class="form-label">البريد الإلكتروني</label>
+                <input type="email" name="Email" class="form-control" id="email" required />
+            </div>
+
+            <div class="mb-3">
+                <label for="message" class="form-label">الرسالة</label>
+                <textarea name="Message" class="form-control" id="message" rows="5" required></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-primary">إرسال</button>
+        </form>
+    </div>

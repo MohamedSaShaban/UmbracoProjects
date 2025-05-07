@@ -1,0 +1,89 @@
+﻿@{
+	Layout = "MainPage.cshtml";
+    var currentMember = await MemberManager.GetCurrentMemberAsync();
+
+    if (currentMember == null)
+    {
+        Context.Response.Redirect("/login?returnUrl=/news");
+    }
+
+    var pageSize = Model.Value<int>("pageSize") > 0 ? Model.Value<int>("pageSize") : 5;
+    var pageParam = Context.Request.Query["page"];
+    var currentPage = 1;
+
+    if (!string.IsNullOrEmpty(pageParam) && int.TryParse(pageParam, out var pageNum) && pageNum > 0)
+    {
+        currentPage = pageNum;
+    }
+
+    var allNews = Model.Children()
+        .Where(x => x.ContentType.Alias == "newsItem")
+        .OrderByDescending(x => x.Value<DateTime>("publishDate"));
+
+    var totalItems = allNews.Count();
+    var totalPages = (int)Math.Ceiling((double)totalItems / pageSize);
+
+    var pagedNews = allNews
+        .Skip((currentPage - 1) * pageSize)
+        .Take(pageSize);
+}
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage<ContentModels.NewsListPage>
+
+<div class="container py-5">
+    <header class="mb-4 text-center">
+        <h1 class="display-6 fw-bold">آخر الأخبار</h1>
+    </header>
+
+    <div class="row">
+        @foreach (var news in pagedNews)
+        {
+            var title = news.Value("newsTitle");
+            var summary = news.Value<string>("newsBody")?.ToString()?.Split('.').FirstOrDefault() + " .";
+            var shortText = Regex.Replace(summary ?? "", "<.*?>", "");
+            var image = news.Value<IPublishedContent>("newsImage");
+            var imageUrl = image?.Url();
+            var url = news.Url();
+
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 shadow-sm">
+                    @if (!string.IsNullOrEmpty(imageUrl))
+                    {
+                        <img src="@imageUrl" class="card-img-top" alt="@title" />
+                    }
+                    <div class="card-body">
+                        <h5 class="card-title">@title</h5>
+                        <p class="card-text">@shortText</p>
+                        <a href="@url" class="btn btn-outline-primary">اقرأ المزيد</a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+    <nav aria-label="Pagination">
+        <ul class="pagination justify-content-center mt-4">
+
+            @if (currentPage > 1)
+            {
+                <li class="page-item mx-1">
+                    <a class="page-link" href="?page=@(currentPage - 1)">السابق</a>
+                </li>
+            }
+
+            @for (int i = 1; i <= totalPages; i++)
+            {
+                <li class="page-item mx-1 @(i == currentPage ? "active" : "")">
+                    <a class="page-link" href="?page=@i">@i</a>
+                </li>
+            }
+
+            @if (currentPage < totalPages)
+            {
+                <li class="page-item mx-1">
+                    <a class="page-link" href="?page=@(currentPage + 1)">التالي</a>
+                </li>
+            }
+
+        </ul>
+    </nav>
+
+    </div>

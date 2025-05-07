@@ -1,0 +1,45 @@
+﻿@{
+	Layout = "MainPage.cshtml";
+    var currentMember = await MemberManager.GetCurrentMemberAsync();
+
+    if (currentMember == null)
+    {
+        Context.Response.Redirect("/login");
+    }
+}
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage<ContentModels.NewsItem>
+@{
+    var publishDate = Model.Value<DateTime>("publishDate");
+}
+
+<div class="container py-5">
+        <header class="mb-4 text-center">
+            <h1 class="fw-bold">@Model.Value("newsTitle")</h1>
+            <p class="text-muted">📅 @publishDate.ToString("yyyy/MM/dd")</p>
+        </header>
+
+        <!-- 🖼️ صورة الخبر -->
+        @{
+            var image = Model.Value<IPublishedContent>("newsImage");
+            if (image != null)
+            {
+                <div class="text-center mb-4">
+                    <img src="@image.Url()" alt="News Image" class="img-fluid rounded shadow news-image" />
+                </div>
+            }
+        }
+
+        <!-- ✍️ محتوى الخبر -->
+        <section class="mb-5">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    @Html.Raw(Model.Value("newsBody"))
+                </div>
+            </div>
+        </section>
+
+        <!-- 🔙 زر الرجوع -->
+        <div class="text-center">
+            <a href="@Model.Parent?.Url()" class="btn btn-outline-primary">🔙 الرجوع إلى الأخبار</a>
+        </div>
+    </div>

@@ -1,0 +1,80 @@
+﻿@{
+	Layout = "MainPage.cshtml";
+}
+
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow rounded">
+                <div class="card-body">
+                    <h4 class="mb-4 text-center">إنشاء حساب جديد</h4>
+
+                    @if (TempData["Message"] != null)
+                    {
+                        <div class="alert alert-info text-center">
+                            @TempData["Message"]
+                        </div>
+                    }
+
+                    <form method="post" asp-controller="MemberAccount" asp-action="Register">
+                        <div class="mb-3">
+                            <label class="form-label">الاسم الكامل</label>
+                            <input type="text" name="Name" class="form-control" required placeholder="أدخل اسمك الكامل" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">البريد الإلكتروني</label>
+                            <input type="email" name="Email" class="form-control" required placeholder="example@email.com" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">اسم المستخدم</label>
+                            <input type="text" name="Username" class="form-control" required placeholder="أدخل اسم المستخدم" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">كلمة المرور</label>
+                            <input type="password" name="Password" class="form-control" required placeholder="أدخل كلمة مرور قوية" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">تأكيد كلمة المرور</label>
+                            <input type="password" name="ConfirmPassword" class="form-control" required placeholder="تأكيد كلمة المرور" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label d-block">هل لديك حساب بنكي؟</label>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="HasBankAccount" value="true" id="hasBankAccountYes" />
+                                <label class="form-check-label" for="hasBankAccountYes">نعم</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="HasBankAccount" value="false" id="hasBankAccountNo" checked />
+                                <label class="form-check-label" for="hasBankAccountNo">لا</label>
+                            </div>
+                        </div>
+
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" name="AcceptTerms" id="acceptTerms" required />
+                            <label class="form-check-label" for="acceptTerms">
+                                أوافق على <a href="#">الشروط والأحكام</a>
+                            </label>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100">إنشاء الحساب</button>
+                    </form>
+
+                    <div class="mt-4 text-center">
+                        <p>هل لديك حساب بالفعل؟ <a href="@Url.Action("Login", "MemberAccount")">تسجيل الدخول</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@if (TempData["RegisterMessage"] != null)
+{
+    <div class="alert alert-info mt-3">@TempData["RegisterMessage"]</div>
+}

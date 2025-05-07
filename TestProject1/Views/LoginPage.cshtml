@@ -1,0 +1,44 @@
+﻿
+@{
+	Layout = "MainPage.cshtml";
+}
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow rounded">
+                <div class="card-body">
+                    <h4 class="mb-4 text-center">تسجيل الدخول</h4>
+
+                    @if (TempData["Message"] != null)
+                    {
+                        <div class="alert alert-danger text-center">
+                            @TempData["Message"]
+                        </div>
+                    }
+
+                    <form method="post" asp-controller="MemberAccount" asp-action="Login">
+                        <div class="mb-3">
+                            <label class="form-label">اسم المستخدم</label>
+                            <input type="text" name="Username" class="form-control" required placeholder="Username" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">كلمة المرور</label>
+                            <input type="password" name="Password" class="form-control" required placeholder="Password" />
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100">تسجيل الدخول</button>
+                    </form>
+
+                    <div class="mt-4 d-flex justify-content-between">
+                        <a href="/register">إنشاء حساب جديد</a>
+                        <a href="@Url.Action("ForgotPassword", "MemberAccount")">نسيت كلمة المرور؟</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

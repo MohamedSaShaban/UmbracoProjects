@@ -1,0 +1,36 @@
+﻿@{
+	Layout = "MainPage.cshtml";
+}
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage<ContentModels.AboutUsPage>
+
+<div class="container py-5">
+
+        <header class="mb-4 text-center">
+            <h1 class="display-6 fw-bold">من نحن</h1>
+        </header>
+
+        <div class="row align-items-center g-5">
+
+            <!-- 🖼️ صورة تعريفية -->
+            @{
+                var image = Model.Value<IPublishedContent>("aboutImage");
+                if (image != null)
+                {
+                    <div class="col-md-6 text-center">
+                        <img src="@image.Url()" alt="About Image" class="img-fluid rounded shadow about-image" />
+                    </div>
+                }
+            }
+
+            <!-- ✍️ نص عن الشركة -->
+            <div class="col-md-6">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        @Html.Raw(Model.Value("companyText"))
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>

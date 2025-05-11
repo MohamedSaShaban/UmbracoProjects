@@ -48,5 +48,12 @@ namespace Umbraco.Cms.Web.Common.PublishedModels
 		}
 
 		// properties
+
+		///<summary>
+		/// عدد عناصر الصفحة
+		///</summary>
+		[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Umbraco.ModelsBuilder.Embedded", "13.4.0+6e3a691")]
+		[ImplementPropertyType("pageSize")]
+		public virtual int PageSize => this.Value<int>(_publishedValueFallback, "pageSize");
 	}
 }

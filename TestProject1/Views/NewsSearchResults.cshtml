@@ -1,0 +1,45 @@
+﻿@using TestProject1.Models
+@{
+    Layout = "MainPage.cshtml";
+}
+
+@model NewsSearchViewModel
+
+<h2>نتائج البحث عن: "@Model.SearchTerm"</h2>
+
+@if (!Model.Results?.Any() == true)
+{
+    <p>لم يتم العثور على نتائج.</p>
+}
+else if (Model.Results != null)
+{
+    foreach (var news in Model.Results)
+    {
+        @* <div class="news-item mb-3">
+            <h4>@news.Value("title")</h4>
+            <p>@news.Value("summary")</p>
+            <a href="@news.Url()" class="btn btn-sm btn-secondary">اقرأ المزيد</a>
+        </div> *@
+
+        var title = news.Value("newsTitle");
+        var summary = news.Value<string>("newsBody")?.ToString()?.Split('.').FirstOrDefault() + " .";
+        var shortText = Regex.Replace(summary ?? "", "<.*?>", "");
+        var image = news.Value<IPublishedContent>("newsImage");
+        var imageUrl = image?.Url();
+        var url = news.Url();
+
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 shadow-sm">
+                @if (!string.IsNullOrEmpty(imageUrl))
+                {
+                    <img src="@imageUrl" class="card-img-top" alt="@title" />
+                }
+                <div class="card-body">
+                    <h5 class="card-title">@title</h5>
+                    <p class="card-text">@shortText</p>
+                    <a href="@url" class="btn btn-outline-primary">اقرأ المزيد</a>
+                </div>
+            </div>
+        </div>
+    }
+}

@@ -1,5 +1,6 @@
-﻿@{
-	Layout = "MainPage.cshtml";
+﻿@inherits UmbracoViewPage<ContentModels.NewsListPage>
+@{
+    Layout = "MainPage.cshtml";
     var currentMember = await MemberManager.GetCurrentMemberAsync();
 
     if (currentMember == null)
@@ -7,34 +8,126 @@
         Context.Response.Redirect("/login?returnUrl=/news");
     }
 
-    var pageSize = Model.Value<int>("pageSize") > 0 ? Model.Value<int>("pageSize") : 5;
-    var pageParam = Context.Request.Query["page"];
-    var currentPage = 1;
+    int pageSize = 0;
+    string? pageParam;
+    int currentPage = 0;
+    int totalItems = 0;
+    int totalPages = 0;
+    IEnumerable<IPublishedContent> pagedNews = new List<IPublishedContent>();
 
-    if (!string.IsNullOrEmpty(pageParam) && int.TryParse(pageParam, out var pageNum) && pageNum > 0)
+    if (Model != null)
     {
-        currentPage = pageNum;
+        pageSize = Model.Value<int>("pageSize") > 0 ? Model.Value<int>("pageSize") : 5;
+        pageParam = Context.Request.Query["page"];
+        currentPage = 1;
+
+        if (!string.IsNullOrEmpty(pageParam) && int.TryParse(pageParam, out var pageNum) && pageNum > 0)
+        {
+            currentPage = pageNum;
+        }
+
+        var allNews = Model.Children()
+            .Where(x => x.ContentType.Alias == "newsItem")
+            .OrderByDescending(x => x.Value<DateTime>("publishDate"));
+
+        totalItems = allNews.Count();
+        totalPages = (int)Math.Ceiling((double)totalItems / pageSize);
+
+        pagedNews = allNews
+            .Skip((currentPage - 1) * pageSize)
+            .Take(pageSize);
+
     }
-
-    var allNews = Model.Children()
-        .Where(x => x.ContentType.Alias == "newsItem")
-        .OrderByDescending(x => x.Value<DateTime>("publishDate"));
-
-    var totalItems = allNews.Count();
-    var totalPages = (int)Math.Ceiling((double)totalItems / pageSize);
-
-    var pagedNews = allNews
-        .Skip((currentPage - 1) * pageSize)
-        .Take(pageSize);
+    var newsModel = ViewBag.NewsModel;
 }
-@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage<ContentModels.NewsListPage>
+
+<header class="mb-4 text-center">
+    <h1 class="display-6 fw-bold">آخر الأخبار</h1>
+</header>
+
+<form method="get" asp-controller="News" asp-action="Search" class="mb-4">
+    <input type="text" name="searchTerm" value="@newsModel?.SearchTerm" class="form-control" placeholder="ابحث عن خبر..." />
+    <button type="submit" class="btn btn-primary mt-2">🔍 بحث</button>
+</form>
 
 <div class="container py-5">
-    <header class="mb-4 text-center">
-        <h1 class="display-6 fw-bold">آخر الأخبار</h1>
-    </header>
+    @if (newsModel != null && newsModel?.TotalPages != 0)
+    {
+        <h5>نتائج البحث:</h5>
+        <div class="row">
+            @foreach (var item in newsModel.Results)
+            {
+                var newsItem = (Umbraco.Cms.Web.Common.PublishedModels.NewsItem)item;
+                var title = newsItem.NewsTitle;
+                var summary = newsItem.NewsBody?.ToString()?.Split('.').FirstOrDefault() + " .";
+                var shortText = Regex.Replace(summary ?? "", "<.*?>", "");
+                var imageUrl = newsItem.NewsImage?.Url() ?? "/images/default-news.jpg";
+                var url = newsItem.Url();
 
-    <div class="row">
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100 shadow-sm">
+                        <img src="@imageUrl" class="card-img-top" alt="@title" />
+                        <div class="card-body">
+                            <h5 class="card-title">@title</h5>
+                            <p class="card-text">@shortText</p>
+                            <a href="@url" class="btn btn-outline-primary">اقرأ المزيد</a>
+                        </div>
+                    </div>
+                </div>
+            }
+
+        </div>
+    
+        @* <nav>
+            <ul class="pagination">
+                @for (int i = 1; i <= newsModel.TotalPages; i++)
+                {
+                    <li class="page-item @(i == newsModel.CurrentPage ? "active" : "")">
+                        <a class="page-link" asp-action="Search" asp-route-searchTerm="@newsModel.SearchTerm" asp-route-page="@i">@i</a>
+                    </li>
+                }
+            </ul>
+        </nav> *@
+        <nav aria-label="Pagination">
+            <ul class="pagination justify-content-center mt-4">
+
+                @if (newsModel.CurrentPage > 1)
+                {
+                    <li class="page-item mx-1">
+                        @* <a class="page-link" href="?page=@(newsModel.CurrentPage - 1)">السابق</a> *@
+                        <a class="page-link" asp-action="Search" asp-route-searchTerm="@newsModel.SearchTerm" asp-route-page="@(newsModel.CurrentPage - 1)">السابق</a>
+                    </li>
+                }
+
+                @for (int i = 1; i <= newsModel.TotalPages; i++)
+                {
+                    <li class="page-item mx-1 @(i == newsModel.CurrentPage ? "active" : "")">
+                        @* <a class="page-link" href="?page=@i">@i</a> *@
+                        <a class="page-link" asp-action="Search" asp-route-searchTerm="@newsModel.SearchTerm" asp-route-page="@i">@i</a>
+                    </li>
+                }
+
+                @if (newsModel.CurrentPage < newsModel.TotalPages)
+                {
+                    <li class="page-item mx-1">
+                        @* <a class="page-link" href="?page=@(newsModel.CurrentPage + 1)">التالي</a> *@
+                        <a class="page-link" asp-action="Search" asp-route-searchTerm="@newsModel.SearchTerm" asp-route-page="@(newsModel.CurrentPage + 1)">التالي</a>
+                    </li>
+                }
+
+            </ul>
+        </nav>
+    }
+
+    else if (newsModel != null && newsModel?.IsSearch && newsModel?.TotalPages == 0)
+    {
+        <p>⚠️ لا توجد نتائج تطابق البحث.</p>
+    }
+
+    else
+    {
+        <h5>أخر الاخبار</h5>
+        <div class="row">
         @foreach (var news in pagedNews)
         {
             var title = news.Value("newsTitle");
@@ -85,5 +178,5 @@
 
         </ul>
     </nav>
-
-    </div>
+    }
+</div>
